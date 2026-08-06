@@ -20,12 +20,16 @@ class DrawingCanvas:
 
   def draw(self, x, y):
     if self.prev_x is not None and self.prev_y is not None:
+      thickness = self.thickness
+      if self.color == WHITE:
+        thickness = 25
+
       cv2.line(
           self.canvas,
           (self.prev_x, self.prev_y),
           (x, y),
           self.color,
-          self.thickness,
+          thickness,
       )
 
     self.prev_x = x
@@ -74,6 +78,31 @@ class DrawingCanvas:
 
       x += 80
 
+    # Eraser Button
+    cv2.rectangle(
+        frame,
+        (560, 15),
+        (700, 65),
+        WHITE,
+        -1,
+    )
+    cv2.rectangle(
+        frame,
+        (560, 15),
+        (700, 65),
+        BLACK,
+        2,
+    )
+    cv2.putText(
+        frame,
+        "Eraser",
+        (580, 48),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        BLACK,
+        2,
+    )
+
   def select_color(self, x, y):
     if y > TOOLBAR_HEIGHT:
       return
@@ -95,3 +124,7 @@ class DrawingCanvas:
 
     elif 440 <= x <= 490:
       self.color = PURPLE
+
+    elif 560 <= x <= 700:
+      self.color = WHITE
+      self.selected_color = WHITE
