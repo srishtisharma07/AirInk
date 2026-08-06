@@ -34,6 +34,20 @@ while True:
                 hand_landmarks,
                 mp_hands.HAND_CONNECTIONS
             )
+            
+            # Get index finger tip
+            index_tip = hand_landmarks.landmark[8]
+
+            # Convert normalized coordinates to pixel coordinates
+            h, w, _ = frame.shape
+            x = int(index_tip.x * w)
+            y = int(index_tip.y * h)
+
+            # Draw a green circle on the index finger tip
+            cv2.circle(frame, (x, y), 10, (0, 255, 0), -1)
+
+            # Print coordinates in terminal
+            print(f"Index Finger: ({x}, {y})")
 
     cv2.imshow("AirInk", frame)
 
