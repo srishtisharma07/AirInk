@@ -11,6 +11,10 @@ mp_draw = mp.solutions.drawing_utils
 # Open webcam
 cap = cv2.VideoCapture(0)
 
+canvas = None
+prev_x = None
+prev_y = None
+
 while True:
     success, frame = cap.read()
 
@@ -19,6 +23,10 @@ while True:
 
     # Flip for a mirror view
     frame = cv2.flip(frame, 1)
+
+    if canvas is None:
+        canvas = frame.copy()
+        canvas[:] = 255
 
     # Convert BGR to RGB
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -43,13 +51,18 @@ while True:
             x = int(index_tip.x * w)
             y = int(index_tip.y * h)
 
-            # Draw a green circle on the index finger tip
+            # Draw a green circle on the index finger tip and draw lines on the canvas
             cv2.circle(frame, (x, y), 10, (0, 255, 0), -1)
+            if prev_x is not None and prev_y is not None:
+                cv2.line(canvas, (prev_x, prev_y), (x, y), (255, 0, 255), 5)
+            prev_x = x
+            prev_y = y
 
             # Print coordinates in terminal
             print(f"Index Finger: ({x}, {y})")
 
     cv2.imshow("AirInk", frame)
+    cv2.imshow("Canvas", canvas)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
