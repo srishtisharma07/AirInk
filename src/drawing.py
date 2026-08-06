@@ -9,7 +9,8 @@ class DrawingCanvas:
     self.prev_x = None
     self.prev_y = None
 
-    self.color = (255, 0, 255)  # Purple
+    self.color = (255, 0, 255)
+    self.selected_color = PURPLE
     self.thickness = 5
 
   def initialize(self, frame):
@@ -72,3 +73,25 @@ class DrawingCanvas:
       )
 
       x += 80
+
+  def select_color(self, x, y):
+    if y > TOOLBAR_HEIGHT:
+      return
+
+    if 40 <= x <= 90:
+      self.color = RED
+
+    elif 120 <= x <= 170:
+      self.color = GREEN
+
+    elif 200 <= x <= 250:
+      self.color = BLUE
+
+    elif 280 <= x <= 330:
+      self.color = BLACK
+
+    elif 360 <= x <= 410:
+      self.color = YELLOW
+
+    elif 440 <= x <= 490:
+      self.color = PURPLE
