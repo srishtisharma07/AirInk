@@ -1,130 +1,200 @@
-from constants import *
 import cv2
+from constants import *
 
 
 class DrawingCanvas:
 
-  def __init__(self):
-    self.canvas = None
-    self.prev_x = None
-    self.prev_y = None
+    def __init__(self):
 
-    self.color = (255, 0, 255)
-    self.selected_color = PURPLE
-    self.thickness = 5
+        self.canvas = None
 
-  def initialize(self, frame):
-    if self.canvas is None:
-      self.canvas = frame.copy()
-      self.canvas[:] = 255
+        self.prev_x = None
+        self.prev_y = None
 
-  def draw(self, x, y):
-    if self.prev_x is not None and self.prev_y is not None:
-      thickness = self.thickness
-      if self.color == WHITE:
-        thickness = 25
+        # Smoothed Position
+        self.smooth_x = None
+        self.smooth_y = None
 
-      cv2.line(
-          self.canvas,
-          (self.prev_x, self.prev_y),
-          (x, y),
-          self.color,
-          thickness,
-      )
+        # Smoothing factor
+        self.alpha = 0.25
 
-    self.prev_x = x
-    self.prev_y = y
+        # Ignore tiny movements
+        self.min_movement = 4
 
-  def reset(self):
-    self.prev_x = None
-    self.prev_y = None
+        self.color = PURPLE
+        self.selected_color = PURPLE
 
-  def draw_toolbar(self, frame):
-    cv2.rectangle(
-        frame,
-        (0, 0),
-        (WINDOW_WIDTH, TOOLBAR_HEIGHT),
-        GRAY,
-        -1,
-    )
+        self.thickness = 5
+        self.eraser_thickness = 35
 
-    colors = [
-        RED,
-        GREEN,
-        BLUE,
-        BLACK,
-        YELLOW,
-        PURPLE,
-    ]
+    def initialize(self, frame):
 
-    x = 40
+        if self.canvas is None:
 
-    for color in colors:
-      cv2.rectangle(
-          frame,
-          (x, 15),
-          (x + 50, 65),
-          color,
-          -1,
-      )
+            self.canvas = frame.copy()
+            self.canvas[:] = WHITE
 
-      cv2.rectangle(
-          frame,
-          (x, 15),
-          (x + 50, 65),
-          BLACK,
-          2,
-      )
+    def draw(self, x, y):
 
-      x += 80
+        # Initialize smoothing
+        if self.smooth_x is None:
 
-    # Eraser Button
-    cv2.rectangle(
-        frame,
-        (560, 15),
-        (700, 65),
-        WHITE,
-        -1,
-    )
-    cv2.rectangle(
-        frame,
-        (560, 15),
-        (700, 65),
-        BLACK,
-        2,
-    )
-    cv2.putText(
-        frame,
-        "Eraser",
-        (580, 48),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        BLACK,
-        2,
-    )
+            self.smooth_x = x
+            self.smooth_y = y
 
-  def select_color(self, x, y):
-    if y > TOOLBAR_HEIGHT:
-      return
+        # Exponential Moving Average
+        self.smooth_x = int(
+            self.alpha * x +
+            (1 - self.alpha) * self.smooth_x
+        )
 
-    if 40 <= x <= 90:
-      self.color = RED
+        self.smooth_y = int(
+            self.alpha * y +
+            (1 - self.alpha) * self.smooth_y
+        )
 
-    elif 120 <= x <= 170:
-      self.color = GREEN
+        thickness = self.thickness
 
-    elif 200 <= x <= 250:
-      self.color = BLUE
+        if self.color == WHITE:
+            thickness = self.eraser_thickness
 
-    elif 280 <= x <= 330:
-      self.color = BLACK
+        if self.prev_x is not None and self.prev_y is not None:
 
-    elif 360 <= x <= 410:
-      self.color = YELLOW
+            dx = self.smooth_x - self.prev_x
+            dy = self.smooth_y - self.prev_y
 
-    elif 440 <= x <= 490:
-      self.color = PURPLE
+            distance = (dx * dx + dy * dy) ** 0.5
 
-    elif 560 <= x <= 700:
-      self.color = WHITE
-      self.selected_color = WHITE
+            if distance < self.min_movement:
+                return
+
+            cv2.line(
+                self.canvas,
+                (self.prev_x, self.prev_y),
+                (self.smooth_x, self.smooth_y),
+                self.color,
+                thickness,
+            )
+
+        self.prev_x = self.smooth_x
+        self.prev_y = self.smooth_y
+
+    def reset(self):
+
+        self.prev_x = None
+        self.prev_y = None
+
+        self.smooth_x = None
+        self.smooth_y = None
+
+    def draw_toolbar(self, frame):
+
+        cv2.rectangle(
+            frame,
+            (0, 0),
+            (WINDOW_WIDTH, TOOLBAR_HEIGHT),
+            GRAY,
+            -1,
+        )
+
+        colors = [
+            RED,
+            GREEN,
+            BLUE,
+            BLACK,
+            YELLOW,
+            PURPLE,
+        ]
+
+        x = 40
+
+        for color in colors:
+
+            cv2.rectangle(
+                frame,
+                (x, 15),
+                (x + 50, 65),
+                color,
+                -1,
+            )
+
+            border = BLACK
+
+            if self.selected_color == color:
+                border = BLUE
+
+            cv2.rectangle(
+                frame,
+                (x, 15),
+                (x + 50, 65),
+                border,
+                3,
+            )
+
+            x += 80
+
+        # Eraser Button
+
+        cv2.rectangle(
+            frame,
+            (560, 15),
+            (700, 65),
+            WHITE,
+            -1,
+        )
+
+        eraser_border = BLACK
+
+        if self.selected_color == WHITE:
+            eraser_border = BLUE
+
+        cv2.rectangle(
+            frame,
+            (560, 15),
+            (700, 65),
+            eraser_border,
+            3,
+        )
+
+        cv2.putText(
+            frame,
+            "Eraser",
+            (580, 48),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            BLACK,
+            2,
+        )
+
+    def select_color(self, x, y):
+
+        if y > TOOLBAR_HEIGHT:
+            return
+
+        if 40 <= x <= 90:
+            self.color = RED
+            self.selected_color = RED
+
+        elif 120 <= x <= 170:
+            self.color = GREEN
+            self.selected_color = GREEN
+
+        elif 200 <= x <= 250:
+            self.color = BLUE
+            self.selected_color = BLUE
+
+        elif 280 <= x <= 330:
+            self.color = BLACK
+            self.selected_color = BLACK
+
+        elif 360 <= x <= 410:
+            self.color = YELLOW
+            self.selected_color = YELLOW
+
+        elif 440 <= x <= 490:
+            self.color = PURPLE
+            self.selected_color = PURPLE
+
+        elif 560 <= x <= 700:
+            self.color = WHITE
+            self.selected_color = WHITE

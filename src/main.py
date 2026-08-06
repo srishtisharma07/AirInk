@@ -12,6 +12,10 @@ def main():
 
     cap = cv2.VideoCapture(0)
 
+    # Higher camera resolution
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return
@@ -38,11 +42,12 @@ def main():
                 x = int(index_tip.x * w)
                 y = int(index_tip.y * h)
 
-                cv2.circle(frame, (x, y), 10, (0, 255, 0), -1)
+                cv2.circle(frame, (x, y), 8, (0, 255, 0), -1)
 
                 index_up = gesture.is_index_finger_up(hand_landmarks)
                 middle_up = gesture.is_middle_finger_up(hand_landmarks)
 
+                # Draw Mode
                 if index_up and not middle_up:
 
                     cv2.putText(
@@ -57,6 +62,7 @@ def main():
 
                     drawing.draw(x, y)
 
+                # Selection Mode
                 elif index_up and middle_up:
 
                     cv2.putText(
@@ -79,6 +85,7 @@ def main():
             drawing.reset()
 
         drawing.draw_toolbar(frame)
+
         cv2.imshow("AirInk", frame)
         cv2.imshow("Canvas", drawing.canvas)
 
