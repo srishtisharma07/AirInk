@@ -89,6 +89,7 @@ def main():
             drawing.reset()
 
         # Display windows
+        drawing.draw_toolbar(frame)
         cv2.imshow("AirInk", frame)
         cv2.imshow("Canvas", drawing.canvas)
 
