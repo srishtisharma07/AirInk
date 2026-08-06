@@ -1,26 +1,28 @@
 import cv2
 
+from constants import *
 from hand_tracker import HandTracker
 from gestures import GestureRecognizer
 from drawing import DrawingCanvas
 
 
 def main():
+
     tracker = HandTracker()
     gesture = GestureRecognizer()
     drawing = DrawingCanvas()
 
     cap = cv2.VideoCapture(0)
 
-    # Higher camera resolution
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, WINDOW_WIDTH)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, WINDOW_HEIGHT)
 
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return
 
     while True:
+
         success, frame = cap.read()
 
         if not success:
@@ -39,6 +41,7 @@ def main():
                 index_tip = hand_landmarks.landmark[8]
 
                 h, w, _ = frame.shape
+
                 x = int(index_tip.x * w)
                 y = int(index_tip.y * h)
 
@@ -47,30 +50,28 @@ def main():
                 index_up = gesture.is_index_finger_up(hand_landmarks)
                 middle_up = gesture.is_middle_finger_up(hand_landmarks)
 
-                # Draw Mode
                 if index_up and not middle_up:
 
                     cv2.putText(
                         frame,
                         "DRAW MODE",
-                        (20, 40),
+                        (20, 110),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        1,
+                        0.8,
                         (0, 255, 0),
                         2,
                     )
 
                     drawing.draw(x, y)
 
-                # Selection Mode
                 elif index_up and middle_up:
 
                     cv2.putText(
                         frame,
                         "SELECTION MODE",
-                        (20, 40),
+                        (20, 110),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        1,
+                        0.8,
                         (255, 0, 0),
                         2,
                     )
@@ -84,10 +85,18 @@ def main():
         else:
             drawing.reset()
 
-        drawing.draw_toolbar(frame)
+        # Overlay drawing on camera
+        overlay = cv2.addWeighted(
+            frame,
+            0.7,
+            drawing.canvas,
+            0.3,
+            0,
+        )
 
-        cv2.imshow("AirInk", frame)
-        cv2.imshow("Canvas", drawing.canvas)
+        drawing.draw_toolbar(overlay)
+
+        cv2.imshow("AirInk", overlay)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break

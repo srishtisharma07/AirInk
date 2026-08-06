@@ -11,15 +11,10 @@ class DrawingCanvas:
         self.prev_x = None
         self.prev_y = None
 
-        # Smoothed Position
         self.smooth_x = None
         self.smooth_y = None
 
-        # Smoothing factor
-        self.alpha = 0.25
-
-        # Ignore tiny movements
-        self.min_movement = 4
+        self.min_movement = 2
 
         self.color = PURPLE
         self.selected_color = PURPLE
@@ -29,52 +24,54 @@ class DrawingCanvas:
 
     def initialize(self, frame):
 
-        if self.canvas is None:
+        h, w = frame.shape[:2]
 
-            self.canvas = frame.copy()
-            self.canvas[:] = WHITE
+        if self.canvas is None:
+            self.canvas = 255 * \
+                cv2.cvtColor(
+                    cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY),
+                    cv2.COLOR_GRAY2BGR
+                )
+
+            self.canvas = self.canvas[:h, :w]
 
     def draw(self, x, y):
 
-        # Initialize smoothing
         if self.smooth_x is None:
-
             self.smooth_x = x
             self.smooth_y = y
 
-        # Exponential Moving Average
-        self.smooth_x = int(
-            self.alpha * x +
-            (1 - self.alpha) * self.smooth_x
-        )
+        dx = x - self.smooth_x
+        dy = y - self.smooth_y
 
-        self.smooth_y = int(
-            self.alpha * y +
-            (1 - self.alpha) * self.smooth_y
-        )
+        speed = (dx * dx + dy * dy) ** 0.5
+
+        alpha = 0.35
+        self.smooth_x = int(alpha * x + (1 - alpha) * self.smooth_x)
+        self.smooth_y = int(alpha * y + (1 - alpha) * self.smooth_y)
 
         thickness = self.thickness
 
         if self.color == WHITE:
             thickness = self.eraser_thickness
 
-        if self.prev_x is not None and self.prev_y is not None:
+        if self.prev_x is not None:
 
             dx = self.smooth_x - self.prev_x
             dy = self.smooth_y - self.prev_y
 
             distance = (dx * dx + dy * dy) ** 0.5
 
-            if distance < self.min_movement:
-                return
+            if distance >= self.min_movement:
 
-            cv2.line(
-                self.canvas,
-                (self.prev_x, self.prev_y),
-                (self.smooth_x, self.smooth_y),
-                self.color,
-                thickness,
-            )
+                cv2.line(
+                    self.canvas,
+                    (self.prev_x, self.prev_y),
+                    (self.smooth_x, self.smooth_y),
+                    self.color,
+                    thickness,
+                    cv2.LINE_AA,
+                )
 
         self.prev_x = self.smooth_x
         self.prev_y = self.smooth_y
@@ -87,12 +84,19 @@ class DrawingCanvas:
         self.smooth_x = None
         self.smooth_y = None
 
+    def clear_canvas(self):
+
+        if self.canvas is not None:
+            self.canvas[:] = WHITE
+
     def draw_toolbar(self, frame):
+
+        h, w = frame.shape[:2]
 
         cv2.rectangle(
             frame,
             (0, 0),
-            (WINDOW_WIDTH, TOOLBAR_HEIGHT),
+            (w, TOOLBAR_HEIGHT),
             GRAY,
             -1,
         )
@@ -110,6 +114,8 @@ class DrawingCanvas:
 
         for color in colors:
 
+            border = BLUE if self.selected_color == color else BLACK
+
             cv2.rectangle(
                 frame,
                 (x, 15),
@@ -117,11 +123,6 @@ class DrawingCanvas:
                 color,
                 -1,
             )
-
-            border = BLACK
-
-            if self.selected_color == color:
-                border = BLUE
 
             cv2.rectangle(
                 frame,
@@ -133,7 +134,9 @@ class DrawingCanvas:
 
             x += 80
 
-        # Eraser Button
+        # Eraser
+
+        border = BLUE if self.selected_color == WHITE else BLACK
 
         cv2.rectangle(
             frame,
@@ -143,25 +146,48 @@ class DrawingCanvas:
             -1,
         )
 
-        eraser_border = BLACK
-
-        if self.selected_color == WHITE:
-            eraser_border = BLUE
-
         cv2.rectangle(
             frame,
             (560, 15),
             (700, 65),
-            eraser_border,
+            border,
             3,
         )
 
         cv2.putText(
             frame,
             "Eraser",
-            (580, 48),
+            (578, 48),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.7,
+            0.65,
+            BLACK,
+            2,
+        )
+
+        # Clear Button
+
+        cv2.rectangle(
+            frame,
+            (740, 15),
+            (860, 65),
+            (200, 200, 200),
+            -1,
+        )
+
+        cv2.rectangle(
+            frame,
+            (740, 15),
+            (860, 65),
+            BLACK,
+            2,
+        )
+
+        cv2.putText(
+            frame,
+            "Clear",
+            (765, 48),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.65,
             BLACK,
             2,
         )
@@ -198,3 +224,6 @@ class DrawingCanvas:
         elif 560 <= x <= 700:
             self.color = WHITE
             self.selected_color = WHITE
+
+        elif 740 <= x <= 860:
+            self.clear_canvas()

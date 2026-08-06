@@ -1,11 +1,8 @@
-# Window settings
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 
-# Toolbar
 TOOLBAR_HEIGHT = 80
 
-# Colors (BGR format)
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
