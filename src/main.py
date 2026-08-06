@@ -2,91 +2,103 @@ import cv2
 
 from hand_tracker import HandTracker
 from gestures import GestureRecognizer
+from drawing import DrawingCanvas
 
 
-cap = cv2.VideoCapture(0)
+def main():
+    # Initialize components
+    tracker = HandTracker()
+    gesture = GestureRecognizer()
+    drawing = DrawingCanvas()
 
-tracker = HandTracker()
-gesture = GestureRecognizer()
+    # Open webcam
+    cap = cv2.VideoCapture(0)
 
-canvas = None
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        return
 
-prev_x = None
-prev_y = None
+    while True:
+        success, frame = cap.read()
 
-while True:
-    success, frame = cap.read()
+        if not success:
+            break
 
-    if not success:
-        break
+        # Mirror effect
+        frame = cv2.flip(frame, 1)
 
-    frame = cv2.flip(frame, 1)
+        # Initialize white canvas only once
+        drawing.initialize(frame)
 
-    if canvas is None:
-        canvas = frame.copy()
-        canvas[:] = 255
+        # Detect hands
+        frame, results = tracker.find_hands(frame)
 
-    frame, results = tracker.find_hands(frame)
+        if results.multi_hand_landmarks:
 
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
+            for hand_landmarks in results.multi_hand_landmarks:
 
-            index_tip = hand_landmarks.landmark[8]
+                # Get index fingertip
+                index_tip = hand_landmarks.landmark[8]
 
-            h, w, _ = frame.shape
-            x = int(index_tip.x * w)
-            y = int(index_tip.y * h)
+                h, w, _ = frame.shape
+                x = int(index_tip.x * w)
+                y = int(index_tip.y * h)
 
-            cv2.circle(frame, (x, y), 10, (0, 255, 0), -1)
+                # Green circle on fingertip
+                cv2.circle(frame, (x, y), 10, (0, 255, 0), -1)
 
-            index_up = gesture.is_index_finger_up(hand_landmarks)
-            middle_up = gesture.is_middle_finger_up(hand_landmarks)
+                # Detect gestures
+                index_up = gesture.is_index_finger_up(hand_landmarks)
+                middle_up = gesture.is_middle_finger_up(hand_landmarks)
 
-            if index_up and not middle_up:
+                # ---------------- DRAW MODE ----------------
+                if index_up and not middle_up:
 
-                cv2.putText(
-                    frame,
-                    "DRAW MODE",
-                    (20, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0, 255, 0),
-                    2,
-                )
+                    cv2.putText(
+                        frame,
+                        "DRAW MODE",
+                        (20, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        (0, 255, 0),
+                        2,
+                    )
 
-                if prev_x is not None and prev_y is not None:
-                    cv2.line(canvas, (prev_x, prev_y), (x, y), (255, 0, 255), 5)
+                    drawing.draw(x, y)
 
-                prev_x = x
-                prev_y = y
+                # ---------------- SELECTION MODE ----------------
+                elif index_up and middle_up:
 
-            elif index_up and middle_up:
-                cv2.putText(
-                    frame,
-                    "SELECTION MODE",
-                    (20, 80),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (255, 0, 0),
-                    2,
-                )
+                    cv2.putText(
+                        frame,
+                        "SELECTION MODE",
+                        (20, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        (255, 0, 0),
+                        2,
+                    )
 
-                prev_x = None
-                prev_y = None
+                    drawing.reset()
 
-            else:
-                prev_x = None
-                prev_y = None
+                # ---------------- OTHER GESTURES ----------------
+                else:
+                    drawing.reset()
 
-    else:
-        prev_x = None
-        prev_y = None
+        else:
+            drawing.reset()
 
-    cv2.imshow("AirInk", frame)
-    cv2.imshow("Canvas", canvas)
+        # Display windows
+        cv2.imshow("AirInk", frame)
+        cv2.imshow("Canvas", drawing.canvas)
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
+        # Quit
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
 
-cap.release()
-cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
