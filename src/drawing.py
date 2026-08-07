@@ -5,7 +5,6 @@ from constants import *
 class DrawingCanvas:
 
     def __init__(self):
-
         self.canvas = None
 
         self.prev_x = None
@@ -19,51 +18,43 @@ class DrawingCanvas:
         self.color = PURPLE
         self.selected_color = PURPLE
 
-        self.thickness = 5
+        self.thickness = 6
         self.eraser_thickness = 35
 
     def initialize(self, frame):
-
-        h, w = frame.shape[:2]
-
         if self.canvas is None:
-            self.canvas = 255 * \
-                cv2.cvtColor(
-                    cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY),
-                    cv2.COLOR_GRAY2BGR
-                )
-
-            self.canvas = self.canvas[:h, :w]
+            self.canvas = frame.copy()
+            self.canvas[:] = WHITE
 
     def draw(self, x, y):
-
         if self.smooth_x is None:
             self.smooth_x = x
             self.smooth_y = y
 
-        dx = x - self.smooth_x
-        dy = y - self.smooth_y
-
-        speed = (dx * dx + dy * dy) ** 0.5
-
         alpha = 0.35
-        self.smooth_x = int(alpha * x + (1 - alpha) * self.smooth_x)
-        self.smooth_y = int(alpha * y + (1 - alpha) * self.smooth_y)
+
+        self.smooth_x = int(
+            alpha * x +
+            (1 - alpha) * self.smooth_x
+        )
+
+        self.smooth_y = int(
+            alpha * y +
+            (1 - alpha) * self.smooth_y
+        )
 
         thickness = self.thickness
 
         if self.color == WHITE:
             thickness = self.eraser_thickness
 
-        if self.prev_x is not None:
-
+        if self.prev_x is not None and self.prev_y is not None:
             dx = self.smooth_x - self.prev_x
             dy = self.smooth_y - self.prev_y
 
             distance = (dx * dx + dy * dy) ** 0.5
 
             if distance >= self.min_movement:
-
                 cv2.line(
                     self.canvas,
                     (self.prev_x, self.prev_y),
@@ -77,7 +68,6 @@ class DrawingCanvas:
         self.prev_y = self.smooth_y
 
     def reset(self):
-
         self.prev_x = None
         self.prev_y = None
 
@@ -85,18 +75,16 @@ class DrawingCanvas:
         self.smooth_y = None
 
     def clear_canvas(self):
-
         if self.canvas is not None:
             self.canvas[:] = WHITE
 
     def draw_toolbar(self, frame):
-
-        h, w = frame.shape[:2]
+        height, width = frame.shape[:2]
 
         cv2.rectangle(
             frame,
             (0, 0),
-            (w, TOOLBAR_HEIGHT),
+            (width, TOOLBAR_HEIGHT),
             GRAY,
             -1,
         )
@@ -113,7 +101,6 @@ class DrawingCanvas:
         x = 40
 
         for color in colors:
-
             border = BLUE if self.selected_color == color else BLACK
 
             cv2.rectangle(
@@ -134,7 +121,9 @@ class DrawingCanvas:
 
             x += 80
 
+        # -------------------------
         # Eraser
+        # -------------------------
 
         border = BLUE if self.selected_color == WHITE else BLACK
 
@@ -164,20 +153,22 @@ class DrawingCanvas:
             2,
         )
 
-        # Clear Button
+        # -------------------------
+        # Clear
+        # -------------------------
 
         cv2.rectangle(
             frame,
-            (740, 15),
-            (860, 65),
+            (720, 15),
+            (810, 65),
             (200, 200, 200),
             -1,
         )
 
         cv2.rectangle(
             frame,
-            (740, 15),
-            (860, 65),
+            (720, 15),
+            (810, 65),
             BLACK,
             2,
         )
@@ -185,17 +176,57 @@ class DrawingCanvas:
         cv2.putText(
             frame,
             "Clear",
-            (765, 48),
+            (733, 48),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.65,
+            0.55,
             BLACK,
             2,
         )
 
-    def select_color(self, x, y):
+        # -------------------------
+        # Brush Size Buttons
+        # -------------------------
 
+        brush_buttons = [
+            ("S", 825),
+            ("M", 870),
+            ("L", 915),
+        ]
+
+        for text, bx in brush_buttons:
+            cv2.rectangle(
+                frame,
+                (bx, 15),
+                (bx + 35, 65),
+                WHITE,
+                -1,
+            )
+
+            cv2.rectangle(
+                frame,
+                (bx, 15),
+                (bx + 35, 65),
+                BLACK,
+                2,
+            )
+
+            cv2.putText(
+                frame,
+                text,
+                (bx + 9, 48),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                BLACK,
+                2,
+            )
+
+    def select_color(self, x, y):
         if y > TOOLBAR_HEIGHT:
             return
+
+        # -------------------------
+        # Color Selection
+        # -------------------------
 
         if 40 <= x <= 90:
             self.color = RED
@@ -221,9 +252,30 @@ class DrawingCanvas:
             self.color = PURPLE
             self.selected_color = PURPLE
 
+        # -------------------------
+        # Eraser
+        # -------------------------
+
         elif 560 <= x <= 700:
             self.color = WHITE
             self.selected_color = WHITE
 
-        elif 740 <= x <= 860:
+        # -------------------------
+        # Clear Canvas
+        # -------------------------
+
+        elif 720 <= x <= 810:
             self.clear_canvas()
+
+        # -------------------------
+        # Brush Size
+        # -------------------------
+
+        elif 825 <= x <= 860:
+            self.thickness = 3
+
+        elif 870 <= x <= 905:
+            self.thickness = 6
+
+        elif 915 <= x <= 950:
+            self.thickness = 10
