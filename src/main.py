@@ -1,4 +1,6 @@
 import cv2
+import os
+from datetime import datetime
 
 from constants import *
 from hand_tracker import HandTracker
@@ -20,6 +22,8 @@ def main():
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return
+
+    os.makedirs("drawings", exist_ok=True)
 
     while True:
 
@@ -85,7 +89,6 @@ def main():
         else:
             drawing.reset()
 
-        # Overlay drawing on camera
         overlay = cv2.addWeighted(
             frame,
             0.7,
@@ -98,7 +101,19 @@ def main():
 
         cv2.imshow("AirInk", overlay)
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord("s"):
+
+            filename = datetime.now().strftime(
+                "drawings/drawing_%Y%m%d_%H%M%S.png"
+            )
+
+            cv2.imwrite(filename, drawing.canvas)
+
+            print(f"Drawing saved to {filename}")
+
+        elif key == ord("q"):
             break
 
     cap.release()
