@@ -1,11 +1,21 @@
 import cv2
-import os
 from datetime import datetime
 
-from constants import *
 from hand_tracker import HandTracker
 from gestures import GestureRecognizer
 from drawing import DrawingCanvas
+from constants import GREEN, BLUE
+
+def save_drawing(canvas):
+    if canvas is None:
+        return
+
+    filename = datetime.now().strftime("drawing_%Y%m%d_%H%M%S.png")
+    path = f"drawings/{filename}"
+
+    cv2.imwrite(path, canvas)
+
+    print(f"Drawing saved: {path}")
 
 
 def main():
@@ -16,14 +26,12 @@ def main():
 
     cap = cv2.VideoCapture(0)
 
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, WINDOW_WIDTH)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, WINDOW_HEIGHT)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
 
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return
-
-    os.makedirs("drawings", exist_ok=True)
 
     while True:
 
@@ -49,71 +57,88 @@ def main():
                 x = int(index_tip.x * w)
                 y = int(index_tip.y * h)
 
-                cv2.circle(frame, (x, y), 8, (0, 255, 0), -1)
+                cv2.circle(
+                    frame,
+                    (x, y),
+                    8,
+                    (0, 255, 0),
+                    -1
+                )
 
-                index_up = gesture.is_index_finger_up(hand_landmarks)
-                middle_up = gesture.is_middle_finger_up(hand_landmarks)
+                index_up = gesture.is_index_finger_up(
+                    hand_landmarks
+                )
+
+                middle_up = gesture.is_middle_finger_up(
+                    hand_landmarks
+                )
+
+                # ==========================================
+                # DRAW MODE
+                # ==========================================
 
                 if index_up and not middle_up:
 
                     cv2.putText(
                         frame,
                         "DRAW MODE",
-                        (20, 110),
+                        (20, 140),
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.8,
-                        (0, 255, 0),
+                        GREEN,
                         2,
                     )
 
                     drawing.draw(x, y)
+
+                # ==========================================
+                # SELECTION MODE
+                # ==========================================
 
                 elif index_up and middle_up:
 
                     cv2.putText(
                         frame,
                         "SELECTION MODE",
-                        (20, 110),
+                        (20, 140),
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.8,
-                        (255, 0, 0),
+                        BLUE,
                         2,
                     )
 
                     drawing.reset()
-                    drawing.select_color(x, y)
+
+                    action = drawing.select_color(x, y)
+
+                    if action == "save":
+                        save_drawing(drawing.canvas)
+
+                # ==========================================
+                # IDLE
+                # ==========================================
 
                 else:
+
                     drawing.reset()
 
         else:
+
             drawing.reset()
 
-        overlay = cv2.addWeighted(
-            frame,
-            0.7,
-            drawing.canvas,
-            0.3,
-            0,
+        # Draw toolbar AFTER hand detection
+        drawing.draw_toolbar(frame)
+
+        cv2.imshow("AirInk", frame)
+
+        cv2.imshow(
+            "Canvas",
+            drawing.canvas
         )
-
-        drawing.draw_toolbar(overlay)
-
-        cv2.imshow("AirInk", overlay)
 
         key = cv2.waitKey(1) & 0xFF
 
-        if key == ord("s"):
-
-            filename = datetime.now().strftime(
-                "drawings/drawing_%Y%m%d_%H%M%S.png"
-            )
-
-            cv2.imwrite(filename, drawing.canvas)
-
-            print(f"Drawing saved to {filename}")
-
-        elif key == ord("q"):
+        if key == ord("q"):
             break
 
     cap.release()

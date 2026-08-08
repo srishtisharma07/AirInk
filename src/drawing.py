@@ -5,6 +5,7 @@ from constants import *
 class DrawingCanvas:
 
     def __init__(self):
+
         self.canvas = None
 
         self.prev_x = None
@@ -22,11 +23,13 @@ class DrawingCanvas:
         self.eraser_thickness = 35
 
     def initialize(self, frame):
+
         if self.canvas is None:
             self.canvas = frame.copy()
             self.canvas[:] = WHITE
 
     def draw(self, x, y):
+
         if self.smooth_x is None:
             self.smooth_x = x
             self.smooth_y = y
@@ -49,12 +52,14 @@ class DrawingCanvas:
             thickness = self.eraser_thickness
 
         if self.prev_x is not None and self.prev_y is not None:
+
             dx = self.smooth_x - self.prev_x
             dy = self.smooth_y - self.prev_y
 
             distance = (dx * dx + dy * dy) ** 0.5
 
             if distance >= self.min_movement:
+
                 cv2.line(
                     self.canvas,
                     (self.prev_x, self.prev_y),
@@ -68,6 +73,7 @@ class DrawingCanvas:
         self.prev_y = self.smooth_y
 
     def reset(self):
+
         self.prev_x = None
         self.prev_y = None
 
@@ -75,11 +81,17 @@ class DrawingCanvas:
         self.smooth_y = None
 
     def clear_canvas(self):
+
         if self.canvas is not None:
             self.canvas[:] = WHITE
 
     def draw_toolbar(self, frame):
+
         height, width = frame.shape[:2]
+
+        # =====================================================
+        # TOOLBAR BACKGROUND
+        # =====================================================
 
         cv2.rectangle(
             frame,
@@ -88,6 +100,24 @@ class DrawingCanvas:
             GRAY,
             -1,
         )
+
+        # =====================================================
+        # TITLE
+        # =====================================================
+
+        cv2.putText(
+            frame,
+            "AIRINK",
+            (20, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            BLACK,
+            2,
+        )
+
+        # =====================================================
+        # COLOR BUTTONS
+        # =====================================================
 
         colors = [
             RED,
@@ -98,77 +128,87 @@ class DrawingCanvas:
             PURPLE,
         ]
 
-        x = 40
+        x = 140
 
         for color in colors:
-            border = BLUE if self.selected_color == color else BLACK
+
+            border = (
+                BLUE
+                if self.selected_color == color
+                else BLACK
+            )
 
             cv2.rectangle(
                 frame,
-                (x, 15),
-                (x + 50, 65),
+                (x, 10),
+                (x + 40, 45),
                 color,
                 -1,
             )
 
             cv2.rectangle(
                 frame,
-                (x, 15),
-                (x + 50, 65),
+                (x, 10),
+                (x + 40, 45),
                 border,
-                3,
+                2,
             )
 
-            x += 80
+            x += 55
 
-        # -------------------------
+        # =====================================================
+        # SECOND ROW
+        # =====================================================
+
         # Eraser
-        # -------------------------
-
-        border = BLUE if self.selected_color == WHITE else BLACK
+        eraser_border = (
+            BLUE
+            if self.selected_color == WHITE
+            else BLACK
+        )
 
         cv2.rectangle(
             frame,
-            (560, 15),
-            (700, 65),
+            (20, 60),
+            (130, 100),
             WHITE,
             -1,
         )
 
         cv2.rectangle(
             frame,
-            (560, 15),
-            (700, 65),
-            border,
-            3,
+            (20, 60),
+            (130, 100),
+            eraser_border,
+            2,
         )
 
         cv2.putText(
             frame,
             "Eraser",
-            (578, 48),
+            (38, 87),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.65,
+            0.55,
             BLACK,
             2,
         )
 
-        # -------------------------
-        # Clear
-        # -------------------------
+        # =====================================================
+        # CLEAR BUTTON
+        # =====================================================
 
         cv2.rectangle(
             frame,
-            (720, 15),
-            (810, 65),
+            (145, 60),
+            (245, 100),
             (200, 200, 200),
             -1,
         )
 
         cv2.rectangle(
             frame,
-            (720, 15),
-            (810, 65),
+            (145, 60),
+            (245, 100),
             BLACK,
             2,
         )
@@ -176,106 +216,220 @@ class DrawingCanvas:
         cv2.putText(
             frame,
             "Clear",
-            (733, 48),
+            (169, 87),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.55,
             BLACK,
             2,
         )
 
-        # -------------------------
-        # Brush Size Buttons
-        # -------------------------
+        # =====================================================
+        # SAVE BUTTON
+        # =====================================================
 
-        brush_buttons = [
-            ("S", 825),
-            ("M", 870),
-            ("L", 915),
-        ]
+        cv2.rectangle(
+            frame,
+            (260, 60),
+            (360, 100),
+            (200, 200, 200),
+            -1,
+        )
 
-        for text, bx in brush_buttons:
-            cv2.rectangle(
-                frame,
-                (bx, 15),
-                (bx + 35, 65),
-                WHITE,
-                -1,
-            )
+        cv2.rectangle(
+            frame,
+            (260, 60),
+            (360, 100),
+            BLACK,
+            2,
+        )
 
-            cv2.rectangle(
-                frame,
-                (bx, 15),
-                (bx + 35, 65),
-                BLACK,
-                2,
-            )
+        cv2.putText(
+            frame,
+            "Save",
+            (284, 87),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.55,
+            BLACK,
+            2,
+        )
 
-            cv2.putText(
-                frame,
-                text,
-                (bx + 9, 48),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.8,
-                BLACK,
-                2,
-            )
+        # =====================================================
+        # BRUSH SIZE LABEL
+        # =====================================================
+
+        cv2.putText(
+            frame,
+            "Brush:",
+            (385, 87),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.55,
+            BLACK,
+            2,
+        )
+
+        # =====================================================
+        # SMALL BRUSH
+        # =====================================================
+
+        small_border = (
+            BLUE if self.thickness == 3 else BLACK
+        )
+
+        cv2.rectangle(
+            frame,
+            (445, 60),
+            (485, 100),
+            WHITE,
+            -1,
+        )
+
+        cv2.rectangle(
+            frame,
+            (445, 60),
+            (485, 100),
+            small_border,
+            2,
+        )
+
+        cv2.circle(
+            frame,
+            (465, 80),
+            3,
+            BLACK,
+            -1,
+        )
+
+        # =====================================================
+        # MEDIUM BRUSH
+        # =====================================================
+
+        medium_border = (
+            BLUE if self.thickness == 6 else BLACK
+        )
+
+        cv2.rectangle(
+            frame,
+            (495, 60),
+            (535, 100),
+            WHITE,
+            -1,
+        )
+
+        cv2.rectangle(
+            frame,
+            (495, 60),
+            (535, 100),
+            medium_border,
+            2,
+        )
+
+        cv2.circle(
+            frame,
+            (515, 80),
+            6,
+            BLACK,
+            -1,
+        )
+
+        # =====================================================
+        # LARGE BRUSH
+        # =====================================================
+
+        large_border = (
+            BLUE if self.thickness == 10 else BLACK
+        )
+
+        cv2.rectangle(
+            frame,
+            (545, 60),
+            (585, 100),
+            WHITE,
+            -1,
+        )
+
+        cv2.rectangle(
+            frame,
+            (545, 60),
+            (585, 100),
+            large_border,
+            2,
+        )
+
+        cv2.circle(
+            frame,
+            (565, 80),
+            10,
+            BLACK,
+            -1,
+        )
 
     def select_color(self, x, y):
-        if y > TOOLBAR_HEIGHT:
-            return
 
-        # -------------------------
-        # Color Selection
-        # -------------------------
+        # =====================================================
+        # FIRST ROW - COLORS
+        # =====================================================
 
-        if 40 <= x <= 90:
-            self.color = RED
-            self.selected_color = RED
+        if 10 <= y <= 45:
 
-        elif 120 <= x <= 170:
-            self.color = GREEN
-            self.selected_color = GREEN
+            if 140 <= x <= 180:
+                self.color = RED
+                self.selected_color = RED
 
-        elif 200 <= x <= 250:
-            self.color = BLUE
-            self.selected_color = BLUE
+            elif 195 <= x <= 235:
+                self.color = GREEN
+                self.selected_color = GREEN
 
-        elif 280 <= x <= 330:
-            self.color = BLACK
-            self.selected_color = BLACK
+            elif 250 <= x <= 290:
+                self.color = BLUE
+                self.selected_color = BLUE
 
-        elif 360 <= x <= 410:
-            self.color = YELLOW
-            self.selected_color = YELLOW
+            elif 305 <= x <= 345:
+                self.color = BLACK
+                self.selected_color = BLACK
 
-        elif 440 <= x <= 490:
-            self.color = PURPLE
-            self.selected_color = PURPLE
+            elif 360 <= x <= 400:
+                self.color = YELLOW
+                self.selected_color = YELLOW
 
-        # -------------------------
-        # Eraser
-        # -------------------------
+            elif 415 <= x <= 455:
+                self.color = PURPLE
+                self.selected_color = PURPLE
 
-        elif 560 <= x <= 700:
-            self.color = WHITE
-            self.selected_color = WHITE
+        # =====================================================
+        # SECOND ROW - TOOLS
+        # =====================================================
 
-        # -------------------------
-        # Clear Canvas
-        # -------------------------
+        elif 60 <= y <= 100:
 
-        elif 720 <= x <= 810:
-            self.clear_canvas()
+            # Eraser
+            if 20 <= x <= 130:
 
-        # -------------------------
-        # Brush Size
-        # -------------------------
+                self.color = WHITE
+                self.selected_color = WHITE
 
-        elif 825 <= x <= 860:
-            self.thickness = 3
+            # Clear
+            elif 145 <= x <= 245:
 
-        elif 870 <= x <= 905:
-            self.thickness = 6
+                self.clear_canvas()
 
-        elif 915 <= x <= 950:
-            self.thickness = 10
+            # Save
+            elif 260 <= x <= 360:
+
+                return "save"
+
+            # Small brush
+            elif 445 <= x <= 485:
+
+                self.thickness = 3
+
+            # Medium brush
+            elif 495 <= x <= 535:
+
+                self.thickness = 6
+
+            # Large brush
+            elif 545 <= x <= 585:
+
+                self.thickness = 10
+
+        return None

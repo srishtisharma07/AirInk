@@ -3,9 +3,9 @@ WINDOW_WIDTH = 960
 WINDOW_HEIGHT = 540
 
 # Toolbar
-TOOLBAR_HEIGHT = 80
+TOOLBAR_HEIGHT = 110
 
-# Colors
+# Colors (BGR format)
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
