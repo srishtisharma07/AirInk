@@ -4,7 +4,7 @@ import time
 
 from hand_tracker import HandTracker
 from gestures import GestureRecognizer
-from drawing import DrawingCanvas
+from drawings import DrawingCanvas
 from constants import GREEN, BLUE
 
 
