@@ -6,25 +6,13 @@ class DrawingCanvas:
 
     def __init__(self):
 
-        # =====================================================
-        # CANVAS
-        # =====================================================
-
         self.canvas = None
-
-        # =====================================================
-        # DRAWING POSITION
-        # =====================================================
 
         self.prev_x = None
         self.prev_y = None
 
         self.smooth_x = None
         self.smooth_y = None
-
-        # =====================================================
-        # DRAWING SETTINGS
-        # =====================================================
 
         self.min_movement = 1
 
@@ -33,13 +21,9 @@ class DrawingCanvas:
 
         # Brush sizes
         self.thickness = 6
-
         self.eraser_thickness = 45
 
-        # =====================================================
-        # COLOR PALETTE
-        # =====================================================
-
+        # Color palette
         self.show_color_palette = False
 
     # =========================================================
@@ -51,7 +35,6 @@ class DrawingCanvas:
         if self.canvas is None:
 
             self.canvas = frame.copy()
-
             self.canvas[:] = WHITE
 
     # =========================================================
@@ -59,10 +42,6 @@ class DrawingCanvas:
     # =========================================================
 
     def draw(self, x, y):
-
-        # -----------------------------------------------------
-        # First point
-        # -----------------------------------------------------
 
         if self.smooth_x is None:
 
@@ -74,33 +53,21 @@ class DrawingCanvas:
 
             return
 
-        # -----------------------------------------------------
-        # Calculate movement
-        # -----------------------------------------------------
-
         dx = x - self.smooth_x
         dy = y - self.smooth_y
 
         distance = (dx * dx + dy * dy) ** 0.5
 
-        # -----------------------------------------------------
-        # Adaptive smoothing
-        # -----------------------------------------------------
-
         if distance < 5:
-
             alpha = 0.12
 
         elif distance < 12:
-
             alpha = 0.22
 
         elif distance < 25:
-
             alpha = 0.38
 
         else:
-
             alpha = 0.60
 
         self.smooth_x += alpha * dx
@@ -109,21 +76,10 @@ class DrawingCanvas:
         current_x = int(round(self.smooth_x))
         current_y = int(round(self.smooth_y))
 
-        # -----------------------------------------------------
-        # Brush / eraser thickness
-        # -----------------------------------------------------
-
         if self.color == WHITE:
-
             thickness = self.eraser_thickness
-
         else:
-
             thickness = self.thickness
-
-        # -----------------------------------------------------
-        # Draw line
-        # -----------------------------------------------------
 
         if self.prev_x is not None:
 
@@ -143,10 +99,6 @@ class DrawingCanvas:
                     cv2.LINE_AA
                 )
 
-        # -----------------------------------------------------
-        # Update position
-        # -----------------------------------------------------
-
         self.prev_x = current_x
         self.prev_y = current_y
 
@@ -163,26 +115,21 @@ class DrawingCanvas:
         self.smooth_y = None
 
     # =========================================================
-    # CLEAR CANVAS
+    # CLEAR
     # =========================================================
 
     def clear_canvas(self):
 
         if self.canvas is not None:
-
             self.canvas[:] = WHITE
 
         self.reset()
 
     # =========================================================
-    # DRAW TOOLBAR
+    # TOOLBAR
     # =========================================================
 
     def draw_toolbar(self, frame):
-
-        # -----------------------------------------------------
-        # Toolbar background
-        # -----------------------------------------------------
 
         cv2.rectangle(
             frame,
@@ -207,7 +154,7 @@ class DrawingCanvas:
         )
 
         # -----------------------------------------------------
-        # COLOR BUTTON
+        # COLOR
         # -----------------------------------------------------
 
         color_border = (
@@ -353,14 +300,10 @@ class DrawingCanvas:
         )
 
         # =====================================================
-        # SMALL BRUSH - 3
+        # SMALL BRUSH
         # =====================================================
 
-        border = (
-            BLUE
-            if self.thickness == 3
-            else BLACK
-        )
+        border = BLUE if self.thickness == 3 else BLACK
 
         cv2.rectangle(
             frame,
@@ -387,14 +330,10 @@ class DrawingCanvas:
         )
 
         # =====================================================
-        # MEDIUM BRUSH - 6
+        # MEDIUM BRUSH
         # =====================================================
 
-        border = (
-            BLUE
-            if self.thickness == 6
-            else BLACK
-        )
+        border = BLUE if self.thickness == 6 else BLACK
 
         cv2.rectangle(
             frame,
@@ -421,14 +360,10 @@ class DrawingCanvas:
         )
 
         # =====================================================
-        # LARGE BRUSH - 12
+        # LARGE BRUSH
         # =====================================================
 
-        border = (
-            BLUE
-            if self.thickness == 12
-            else BLACK
-        )
+        border = BLUE if self.thickness == 12 else BLACK
 
         cv2.rectangle(
             frame,
@@ -452,6 +387,20 @@ class DrawingCanvas:
             12,
             BLACK,
             -1
+        )
+
+        # =====================================================
+        # ACTIVE BRUSH INDICATOR
+        # =====================================================
+
+        cv2.putText(
+            frame,
+            f"Size: {self.thickness}px",
+            (805, 40),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.55,
+            BLACK,
+            2
         )
 
         # =====================================================
