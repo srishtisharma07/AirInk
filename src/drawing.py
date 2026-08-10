@@ -31,9 +31,9 @@ class DrawingCanvas:
         self.color = PURPLE
         self.selected_color = PURPLE
 
+        # Brush sizes
         self.thickness = 6
 
-        # Larger eraser for easier correction
         self.eraser_thickness = 45
 
         # =====================================================
@@ -51,6 +51,7 @@ class DrawingCanvas:
         if self.canvas is None:
 
             self.canvas = frame.copy()
+
             self.canvas[:] = WHITE
 
     # =========================================================
@@ -58,6 +59,10 @@ class DrawingCanvas:
     # =========================================================
 
     def draw(self, x, y):
+
+        # -----------------------------------------------------
+        # First point
+        # -----------------------------------------------------
 
         if self.smooth_x is None:
 
@@ -70,7 +75,7 @@ class DrawingCanvas:
             return
 
         # -----------------------------------------------------
-        # Smooth fingertip movement
+        # Calculate movement
         # -----------------------------------------------------
 
         dx = x - self.smooth_x
@@ -78,16 +83,24 @@ class DrawingCanvas:
 
         distance = (dx * dx + dy * dy) ** 0.5
 
+        # -----------------------------------------------------
+        # Adaptive smoothing
+        # -----------------------------------------------------
+
         if distance < 5:
+
             alpha = 0.12
 
         elif distance < 12:
+
             alpha = 0.22
 
         elif distance < 25:
+
             alpha = 0.38
 
         else:
+
             alpha = 0.60
 
         self.smooth_x += alpha * dx
@@ -96,9 +109,9 @@ class DrawingCanvas:
         current_x = int(round(self.smooth_x))
         current_y = int(round(self.smooth_y))
 
-        # =====================================================
-        # ERASER
-        # =====================================================
+        # -----------------------------------------------------
+        # Brush / eraser thickness
+        # -----------------------------------------------------
 
         if self.color == WHITE:
 
@@ -108,9 +121,9 @@ class DrawingCanvas:
 
             thickness = self.thickness
 
-        # =====================================================
-        # DRAW / ERASE STROKE
-        # =====================================================
+        # -----------------------------------------------------
+        # Draw line
+        # -----------------------------------------------------
 
         if self.prev_x is not None:
 
@@ -130,9 +143,9 @@ class DrawingCanvas:
                     cv2.LINE_AA
                 )
 
-        # =====================================================
-        # UPDATE POSITION
-        # =====================================================
+        # -----------------------------------------------------
+        # Update position
+        # -----------------------------------------------------
 
         self.prev_x = current_x
         self.prev_y = current_y
@@ -162,10 +175,14 @@ class DrawingCanvas:
         self.reset()
 
     # =========================================================
-    # TOOLBAR
+    # DRAW TOOLBAR
     # =========================================================
 
     def draw_toolbar(self, frame):
+
+        # -----------------------------------------------------
+        # Toolbar background
+        # -----------------------------------------------------
 
         cv2.rectangle(
             frame,
@@ -190,7 +207,7 @@ class DrawingCanvas:
         )
 
         # -----------------------------------------------------
-        # COLOR
+        # COLOR BUTTON
         # -----------------------------------------------------
 
         color_border = (
@@ -322,7 +339,7 @@ class DrawingCanvas:
         )
 
         # -----------------------------------------------------
-        # BRUSH
+        # BRUSH LABEL
         # -----------------------------------------------------
 
         cv2.putText(
@@ -335,9 +352,15 @@ class DrawingCanvas:
             2
         )
 
-        # Small
+        # =====================================================
+        # SMALL BRUSH - 3
+        # =====================================================
 
-        border = BLUE if self.thickness == 3 else BLACK
+        border = (
+            BLUE
+            if self.thickness == 3
+            else BLACK
+        )
 
         cv2.rectangle(
             frame,
@@ -363,9 +386,15 @@ class DrawingCanvas:
             -1
         )
 
-        # Medium
+        # =====================================================
+        # MEDIUM BRUSH - 6
+        # =====================================================
 
-        border = BLUE if self.thickness == 6 else BLACK
+        border = (
+            BLUE
+            if self.thickness == 6
+            else BLACK
+        )
 
         cv2.rectangle(
             frame,
@@ -391,9 +420,15 @@ class DrawingCanvas:
             -1
         )
 
-        # Large
+        # =====================================================
+        # LARGE BRUSH - 12
+        # =====================================================
 
-        border = BLUE if self.thickness == 10 else BLACK
+        border = (
+            BLUE
+            if self.thickness == 12
+            else BLACK
+        )
 
         cv2.rectangle(
             frame,
@@ -414,7 +449,7 @@ class DrawingCanvas:
         cv2.circle(
             frame,
             (770, 34),
-            10,
+            12,
             BLACK,
             -1
         )
@@ -617,7 +652,7 @@ class DrawingCanvas:
 
         elif 745 <= x <= 800 and 5 <= y <= 65:
 
-            self.thickness = 10
+            self.thickness = 12
 
             return None
 
