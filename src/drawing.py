@@ -19,7 +19,6 @@ class DrawingCanvas:
         self.prev_x = None
         self.prev_y = None
 
-        # Smoothed fingertip position
         self.smooth_x = None
         self.smooth_y = None
 
@@ -33,7 +32,9 @@ class DrawingCanvas:
         self.selected_color = PURPLE
 
         self.thickness = 6
-        self.eraser_thickness = 35
+
+        # Larger eraser for easier correction
+        self.eraser_thickness = 45
 
         # =====================================================
         # COLOR PALETTE
@@ -50,7 +51,6 @@ class DrawingCanvas:
         if self.canvas is None:
 
             self.canvas = frame.copy()
-
             self.canvas[:] = WHITE
 
     # =========================================================
@@ -58,10 +58,6 @@ class DrawingCanvas:
     # =========================================================
 
     def draw(self, x, y):
-
-        # -----------------------------------------------------
-        # First point
-        # -----------------------------------------------------
 
         if self.smooth_x is None:
 
@@ -74,7 +70,7 @@ class DrawingCanvas:
             return
 
         # -----------------------------------------------------
-        # Calculate movement
+        # Smooth fingertip movement
         # -----------------------------------------------------
 
         dx = x - self.smooth_x
@@ -82,27 +78,16 @@ class DrawingCanvas:
 
         distance = (dx * dx + dy * dy) ** 0.5
 
-        # -----------------------------------------------------
-        # Adaptive smoothing
-        #
-        # Small movement  -> more smoothing
-        # Large movement  -> less smoothing
-        # -----------------------------------------------------
-
         if distance < 5:
-
             alpha = 0.12
 
         elif distance < 12:
-
             alpha = 0.22
 
         elif distance < 25:
-
             alpha = 0.38
 
         else:
-
             alpha = 0.60
 
         self.smooth_x += alpha * dx
@@ -111,19 +96,21 @@ class DrawingCanvas:
         current_x = int(round(self.smooth_x))
         current_y = int(round(self.smooth_y))
 
-        # -----------------------------------------------------
-        # Brush thickness
-        # -----------------------------------------------------
-
-        thickness = self.thickness
+        # =====================================================
+        # ERASER
+        # =====================================================
 
         if self.color == WHITE:
 
             thickness = self.eraser_thickness
 
-        # -----------------------------------------------------
-        # Draw continuous stroke
-        # -----------------------------------------------------
+        else:
+
+            thickness = self.thickness
+
+        # =====================================================
+        # DRAW / ERASE STROKE
+        # =====================================================
 
         if self.prev_x is not None:
 
@@ -143,15 +130,15 @@ class DrawingCanvas:
                     cv2.LINE_AA
                 )
 
-        # -----------------------------------------------------
-        # Update previous point
-        # -----------------------------------------------------
+        # =====================================================
+        # UPDATE POSITION
+        # =====================================================
 
         self.prev_x = current_x
         self.prev_y = current_y
 
     # =========================================================
-    # RESET DRAWING POSITION
+    # RESET
     # =========================================================
 
     def reset(self):
@@ -175,14 +162,10 @@ class DrawingCanvas:
         self.reset()
 
     # =========================================================
-    # DRAW TOOLBAR
+    # TOOLBAR
     # =========================================================
 
     def draw_toolbar(self, frame):
-
-        # -----------------------------------------------------
-        # Toolbar background
-        # -----------------------------------------------------
 
         cv2.rectangle(
             frame,
@@ -207,7 +190,7 @@ class DrawingCanvas:
         )
 
         # -----------------------------------------------------
-        # COLOR BUTTON
+        # COLOR
         # -----------------------------------------------------
 
         color_border = (
@@ -339,7 +322,7 @@ class DrawingCanvas:
         )
 
         # -----------------------------------------------------
-        # BRUSH LABEL
+        # BRUSH
         # -----------------------------------------------------
 
         cv2.putText(
@@ -352,15 +335,9 @@ class DrawingCanvas:
             2
         )
 
-        # -----------------------------------------------------
-        # SMALL BRUSH
-        # -----------------------------------------------------
+        # Small
 
-        border = (
-            BLUE
-            if self.thickness == 3
-            else BLACK
-        )
+        border = BLUE if self.thickness == 3 else BLACK
 
         cv2.rectangle(
             frame,
@@ -386,15 +363,9 @@ class DrawingCanvas:
             -1
         )
 
-        # -----------------------------------------------------
-        # MEDIUM BRUSH
-        # -----------------------------------------------------
+        # Medium
 
-        border = (
-            BLUE
-            if self.thickness == 6
-            else BLACK
-        )
+        border = BLUE if self.thickness == 6 else BLACK
 
         cv2.rectangle(
             frame,
@@ -420,15 +391,9 @@ class DrawingCanvas:
             -1
         )
 
-        # -----------------------------------------------------
-        # LARGE BRUSH
-        # -----------------------------------------------------
+        # Large
 
-        border = (
-            BLUE
-            if self.thickness == 10
-            else BLACK
-        )
+        border = BLUE if self.thickness == 10 else BLACK
 
         cv2.rectangle(
             frame,
@@ -460,7 +425,6 @@ class DrawingCanvas:
 
         if self.show_color_palette:
 
-            # Palette background
             cv2.rectangle(
                 frame,
                 (110, 60),
@@ -469,7 +433,6 @@ class DrawingCanvas:
                 -1
             )
 
-            # Palette border
             cv2.rectangle(
                 frame,
                 (110, 60),
@@ -524,199 +487,137 @@ class DrawingCanvas:
                 )
 
     # =========================================================
-    # SELECT TOOL / COLOR
+    # SELECT COLOR / TOOL
     # =========================================================
 
     def select_color(self, x, y):
 
         # =====================================================
-        # COLOR PALETTE
+        # PALETTE
         # =====================================================
 
         if self.show_color_palette:
-
-            # -------------------------------------------------
-            # RED
-            # -------------------------------------------------
 
             if 112 <= x <= 172 and 55 <= y <= 120:
 
                 self.color = RED
                 self.selected_color = RED
-
                 self.show_color_palette = False
 
-                print("Color selected: RED")
-
                 return None
-
-            # -------------------------------------------------
-            # GREEN
-            # -------------------------------------------------
 
             elif 172 < x <= 229 and 55 <= y <= 120:
 
                 self.color = GREEN
                 self.selected_color = GREEN
-
                 self.show_color_palette = False
 
-                print("Color selected: GREEN")
-
                 return None
-
-            # -------------------------------------------------
-            # BLUE
-            # -------------------------------------------------
 
             elif 229 < x <= 286 and 55 <= y <= 120:
 
                 self.color = BLUE
                 self.selected_color = BLUE
-
                 self.show_color_palette = False
 
-                print("Color selected: BLUE")
-
                 return None
-
-            # -------------------------------------------------
-            # BLACK
-            # -------------------------------------------------
 
             elif 286 < x <= 343 and 55 <= y <= 120:
 
                 self.color = BLACK
                 self.selected_color = BLACK
-
                 self.show_color_palette = False
 
-                print("Color selected: BLACK")
-
                 return None
-
-            # -------------------------------------------------
-            # YELLOW
-            # -------------------------------------------------
 
             elif 343 < x <= 400 and 55 <= y <= 120:
 
                 self.color = YELLOW
                 self.selected_color = YELLOW
-
                 self.show_color_palette = False
 
-                print("Color selected: YELLOW")
-
                 return None
-
-            # -------------------------------------------------
-            # PURPLE
-            # -------------------------------------------------
 
             elif 400 < x <= 455 and 55 <= y <= 120:
 
                 self.color = PURPLE
                 self.selected_color = PURPLE
-
                 self.show_color_palette = False
-
-                print("Color selected: PURPLE")
 
                 return None
 
             return None
 
         # =====================================================
-        # MAIN TOOLBAR
+        # COLOR BUTTON
         # =====================================================
-
-        # -----------------------------------------------------
-        # COLOR
-        # -----------------------------------------------------
 
         if 110 <= x <= 235 and 5 <= y <= 65:
 
             self.show_color_palette = True
 
-            print("Color palette opened")
-
             return None
 
-        # -----------------------------------------------------
+        # =====================================================
         # ERASER
-        # -----------------------------------------------------
+        # =====================================================
 
         elif 225 <= x <= 350 and 5 <= y <= 65:
 
             self.color = WHITE
             self.selected_color = WHITE
-
             self.show_color_palette = False
-
-            print("Eraser selected")
 
             return None
 
-        # -----------------------------------------------------
+        # =====================================================
         # CLEAR
-        # -----------------------------------------------------
+        # =====================================================
 
         elif 350 <= x <= 460 and 5 <= y <= 65:
 
             self.clear_canvas()
-
             self.show_color_palette = False
-
-            print("Canvas cleared")
 
             return None
 
-        # -----------------------------------------------------
+        # =====================================================
         # SAVE
-        # -----------------------------------------------------
+        # =====================================================
 
         elif 460 <= x <= 570 and 5 <= y <= 65:
 
             self.show_color_palette = False
 
-            print("Save selected")
-
             return "save"
 
-        # -----------------------------------------------------
+        # =====================================================
         # SMALL BRUSH
-        # -----------------------------------------------------
+        # =====================================================
 
         elif 640 <= x <= 695 and 5 <= y <= 65:
 
             self.thickness = 3
 
-            print("Small brush selected")
-
             return None
 
-        # -----------------------------------------------------
+        # =====================================================
         # MEDIUM BRUSH
-        # -----------------------------------------------------
+        # =====================================================
 
         elif 695 <= x <= 745 and 5 <= y <= 65:
 
             self.thickness = 6
 
-            print("Medium brush selected")
-
             return None
 
-        # -----------------------------------------------------
+        # =====================================================
         # LARGE BRUSH
-        # -----------------------------------------------------
+        # =====================================================
 
         elif 745 <= x <= 800 and 5 <= y <= 65:
 
             self.thickness = 10
-
-            print("Large brush selected")
 
             return None
 
