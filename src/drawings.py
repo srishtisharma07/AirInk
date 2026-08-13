@@ -300,10 +300,10 @@ class DrawingCanvas:
         )
 
         # =====================================================
-        # SMALL BRUSH
+        # SMALL BRUSH - 6px
         # =====================================================
 
-        border = BLUE if self.thickness == 3 else BLACK
+        border = BLUE if self.thickness == 6 else BLACK
 
         cv2.rectangle(
             frame,
@@ -324,16 +324,16 @@ class DrawingCanvas:
         cv2.circle(
             frame,
             (670, 34),
-            3,
+            6,
             BLACK,
             -1
         )
 
         # =====================================================
-        # MEDIUM BRUSH
+        # MEDIUM BRUSH - 12px
         # =====================================================
 
-        border = BLUE if self.thickness == 6 else BLACK
+        border = BLUE if self.thickness == 12 else BLACK
 
         cv2.rectangle(
             frame,
@@ -354,16 +354,16 @@ class DrawingCanvas:
         cv2.circle(
             frame,
             (720, 34),
-            6,
+            12,
             BLACK,
             -1
         )
 
         # =====================================================
-        # LARGE BRUSH
+        # LARGE BRUSH - 20px
         # =====================================================
 
-        border = BLUE if self.thickness == 12 else BLACK
+        border = BLUE if self.thickness == 20 else BLACK
 
         cv2.rectangle(
             frame,
@@ -384,7 +384,7 @@ class DrawingCanvas:
         cv2.circle(
             frame,
             (770, 34),
-            12,
+            20,
             BLACK,
             -1
         )
@@ -576,32 +576,32 @@ class DrawingCanvas:
             return "save"
 
         # =====================================================
-        # SMALL BRUSH
+        # SMALL BRUSH - 6px
         # =====================================================
 
         elif 640 <= x <= 695 and 5 <= y <= 65:
-
-            self.thickness = 3
-
-            return None
-
-        # =====================================================
-        # MEDIUM BRUSH
-        # =====================================================
-
-        elif 695 <= x <= 745 and 5 <= y <= 65:
 
             self.thickness = 6
 
             return None
 
         # =====================================================
-        # LARGE BRUSH
+        # MEDIUM BRUSH - 12px
+        # =====================================================
+
+        elif 695 <= x <= 745 and 5 <= y <= 65:
+
+            self.thickness = 12
+
+            return None
+
+        # =====================================================
+        # LARGE BRUSH - 20px
         # =====================================================
 
         elif 745 <= x <= 800 and 5 <= y <= 65:
 
-            self.thickness = 12
+            self.thickness = 20
 
             return None
 

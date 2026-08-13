@@ -51,6 +51,46 @@ def main():
         return
 
     # =========================================================
+    # WINDOW SETUP
+    # =========================================================
+
+    cv2.namedWindow(
+        "AirInk",
+        cv2.WINDOW_NORMAL
+    )
+
+    cv2.namedWindow(
+        "Canvas",
+        cv2.WINDOW_NORMAL
+    )
+
+    # Resize both windows
+    cv2.resizeWindow(
+        "AirInk",
+        760,
+        440
+    )
+
+    cv2.resizeWindow(
+        "Canvas",
+        760,
+        440
+    )
+
+    # Place windows side-by-side
+    cv2.moveWindow(
+        "AirInk",
+        0,
+        40
+    )
+
+    cv2.moveWindow(
+        "Canvas",
+        780,
+        40
+    )
+
+    # =========================================================
     # SAVE NOTIFICATION
     # =========================================================
 
@@ -180,12 +220,7 @@ def main():
                     if drawing.show_color_palette:
 
                         # -------------------------------------------------
-                        # IMPORTANT:
-                        #
-                        # Do NOT call drawing.select_color() immediately.
-                        #
-                        # First determine whether the finger is actually
-                        # sitting over a color.
+                        # Determine whether finger is over a color
                         # -------------------------------------------------
 
                         current_color = None
@@ -279,8 +314,6 @@ def main():
 
                             if elapsed >= color_selection_delay:
 
-                                # Map our temporary color name to
-                                # the actual palette coordinate.
                                 color_positions = {
                                     "red": (140, 85),
                                     "green": (197, 85),
@@ -396,8 +429,7 @@ def main():
 
             drawing.reset()
 
-            # Keep the palette open if it was already open.
-            # Only reset the temporary color hover.
+            # Keep palette state stable
             hovered_color = None
             color_hover_start = 0
 
