@@ -10,8 +10,6 @@ Using a webcam, OpenCV, and MediaPipe, AirInk tracks hand movements and converts
 
 ## 🎥 Demo
 
-[▶️ Watch the AirInk Demo]
-
 
 https://github.com/user-attachments/assets/d6b18c8a-a3e6-4169-8a54-77635e8559f9
 
