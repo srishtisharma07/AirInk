@@ -8,6 +8,15 @@ Using a webcam, OpenCV, and MediaPipe, AirInk tracks hand movements and converts
 
 ---
 
+## 🎥 Demo
+
+[▶️ Watch the AirInk Demo](assets/airink-demo.mp4)
+
+The demo showcases real-time hand tracking, gesture-controlled drawing, color selection, brush-size selection, erasing, and saving drawings.
+
+---
+
+
 ## ✨ Features
 
 * 🖐️ Real-time hand tracking
@@ -184,12 +193,13 @@ Make sure your webcam is connected and accessible.
 AirInk/
 │
 ├── assets/
+|   |── airink-demo.mp4
 │
 ├── drawings/
 │
 ├── src/
 │   ├── main.py
-│   ├── drawing.py
+│   ├── drawings.py
 │   ├── gestures.py
 │   ├── hand_tracker.py
 │   └── constants.py
@@ -215,7 +225,7 @@ Handles hand detection and landmark tracking using MediaPipe.
 
 Identifies finger positions and determines whether the user is in drawing or selection mode.
 
-### `drawing.py`
+### `drawings.py`
 
 Manages the virtual canvas and drawing functionality, including:
 
