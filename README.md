@@ -10,10 +10,7 @@ Using a webcam, OpenCV, and MediaPipe, AirInk tracks hand movements and converts
 
 ## 🎥 Demo
 
-
-https://github.com/user-attachments/assets/d6b18c8a-a3e6-4169-8a54-77635e8559f9
-
-
+https://github.com/user-attachments/assets/9db7463b-2987-4704-a8f5-c81661519d23
 
 The demo showcases real-time hand tracking, gesture-controlled drawing, color selection, brush-size selection, erasing, and saving drawings.
 
